@@ -1,4 +1,4 @@
-package "clip"
+package clip
 
 type User struct {
 	id int
