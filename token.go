@@ -50,4 +50,9 @@ func add(m map[string]map[string]int, env, feature string, val int) {
         m[env] = mm
     }
     mm[feature] = val
+
+	//var sample map[string]map[string]int
+	//sample = make(map[string]map[string]int)
+	//add(sample, "dev", "feature", 1)
+	//fmt.Printf("The feature is on? %d\n", sample["dev"]["feature"])
 }
