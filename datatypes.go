@@ -1,7 +1,6 @@
 package clip
 
 type User struct {
-	id int
 	First string
 	Last string
 	Email string
