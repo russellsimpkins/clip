@@ -3,7 +3,6 @@ package clip
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"hash/crc32"
 	"math/rand"
 	"time"
 	"hash/crc32"
