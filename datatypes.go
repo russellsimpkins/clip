@@ -5,26 +5,33 @@ type User struct {
 	First string
 	Last string
 	Email string
+	Groups []string
+	Teams []Team
 }
 
-type Department struct {
+type Group struct {
 	id int
 	Name string
-	Members []User
-	Applications []string
+	Access uint8
+	Users []User
+	Teams []Team
+}
+
+type Team struct {
+	id int
+	Name string
+	Groups []Group
 	Token []Token
 }
 
 type Token struct {
 	IntValue uint32
 	StringValue string
-	Department Department
+	Applications map[string]Feature `json:apps`
 }
 
-type FeatureFlag struct {
-	Token string             `json:token`
-	Application string       `json:application`
-	Features map[string]Flag `json:features`
+type Feature struct {
+	Flags map[string]Flag `json:features`
 }
 
 type Flag struct {
