@@ -8,9 +8,14 @@ import (
 )
 
 
-func GetApplicationFeatures(writer http.ResponseWriter, req *http.Request) {
+func AddAppFeature(app, feature, environment string) (err error) {
+	return
+}
+
+func GetAppFeatures(writer http.ResponseWriter, req *http.Request) {
 	vars := mux.Vars(req)
 	fmt.Printf("We have this many %v", vars)
+	return
 }
 
 /*
@@ -31,7 +36,7 @@ func main() {
 	short := crc32.ChecksumIEEE([]byte(key))
 	fmt.Printf("This is my value %d\n", short)
 	r := mux.NewRouter()
-	r.HandleFunc("/svc/clip/{application}", GetApplicationFeatures)
+	r.HandleFunc("/svc/clip/{application}", GetAppFeatures)
 	var sample map[string]map[string]int
 	
 	sample = make(map[string]map[string]int)
