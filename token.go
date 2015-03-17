@@ -39,3 +39,15 @@ func GenerateToken() (token Token) {
     return
 }
 
+
+/*
+ * Taken right from the docs. This is how you populate a map of maps
+ */
+func add(m map[string]map[string]int, env, feature string, val int) {
+    mm, ok := m[env]
+    if !ok {
+        mm = make(map[string]int)
+        m[env] = mm
+    }
+    mm[feature] = val
+}
