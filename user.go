@@ -1,37 +1,35 @@
 package clip
 
 import (
-	"github.com/garyburd/redigo/redis"
+	"encoding/json"
 )
 
 // this file holds all the logic for handling users in the system
-type ClipUser interface {
-	AddUser(user *User) (err error)
-	UpdateUser(user *User) (err error)
-	DeleteUser(user User) (err error)
-}
 
-
-
-func getNextUserId() (err error, id uint32) {
-	sql := "INCR sys.users"
+func AddUser(user *User) (err error) {
 	var (
-		conn redis.Conn
-		reply []interface{}
+		r RedisHelper
+		data []byte
 	)
-	conn, err = redis.Dial("tcp", ":6379")
-	if err != nil {
-		return
-	}
-	defer conn.Close()
-	reply, err = redis.Values(conn.Do(sql))
-
-	if err != nil {
-		return
-	}
 	
-	_, err = redis.Scan(reply, &id)
+	r = NewRedisHelper()
+	defer r.Close()
+
+	data, err = json.Marshal(user)
+	if err != nil {
+		return
+	}
+	r.Store(user.Email, data)
 	return
 }
+
+func DeleteUser(user *User) (err error) {
+	var r RedisHelper
+	r = NewRedisHelper()
+	_, err = r.Conn.Do("DEL", user.Email)
+
+	return
+}
+
 
 
