@@ -3,7 +3,7 @@ package clip
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"fmt"
+	"hash/crc32"
 	"math/rand"
 	"time"
 )
@@ -34,9 +34,8 @@ func GenerateToken() (token Token) {
 	hash := sha256.New()
 	hash.Write(rndString)
 	md := hash.Sum(nil)
-	Token.StringValue = hex.EncodeToString(md)
-	Token.IntValue = crc32.ChecksumIEEE(md)
-    fmt.Printf("This is my value %d\n", Token.IntValue)
+	token.StringValue = hex.EncodeToString(md)
+	token.IntValue = crc32.ChecksumIEEE(md)
     return
 }
 
