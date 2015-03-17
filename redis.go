@@ -3,7 +3,6 @@ package clip
 import (
 	"github.com/garyburd/redigo/redis"
 	"hash/fnv"
-//	"fmt"
 )
 
 type RedisHelper struct {
@@ -11,7 +10,6 @@ type RedisHelper struct {
 }
 
 type Helper interface {
-	New() (h Helper)
 	GetKey(key string) (hash uint64)
 	GetConn() (conn redis.Conn, err error)
 	GetNextVal(key string) (id uint32, err error)
