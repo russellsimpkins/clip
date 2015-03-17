@@ -27,7 +27,6 @@ func DeleteUser(user *User) (err error) {
 	var r RedisHelper
 	r = NewRedisHelper()
 	_, err = r.Conn.Do("DEL", user.Email)
-
 	return
 }
 
