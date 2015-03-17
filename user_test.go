@@ -17,6 +17,10 @@ func TestAddUser(t *testing.T) {
 		t.Log("There was an error: ", err)
 		t.Fail()
 	}
+	err = DeleteUser(&user)
+	if err != nil {
+		t.Log("There was an error: ", err)
+		t.Fail()
+	}
 
-	
 }
