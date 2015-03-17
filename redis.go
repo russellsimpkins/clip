@@ -3,6 +3,7 @@ package clip
 import (
 	"github.com/garyburd/redigo/redis"
 	"hash/fnv"
+//	"fmt"
 )
 
 type RedisHelper struct {
@@ -65,5 +66,15 @@ func (h *RedisHelper) GetNextVal(key string) (id int64, err error) {
 // this utility function attempts to store a key value pair
 func (h *RedisHelper) Store(key string, data []byte) (err error) {
 	_, err = h.Conn.Do("SET", []byte(key), data)
+	return
+}
+
+// this utility function attempts to store a key value pair
+func (h *RedisHelper) Fetch(key string) (data []byte, err error) {
+	var reply interface{}
+	var sniff string
+	reply, err = h.Conn.Do("GET", key)
+	sniff, err = redis.String(reply, err)
+	data = []byte(sniff)
 	return
 }
