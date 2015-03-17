@@ -5,6 +5,9 @@ import (
 	"testing"
 )
 
-func testToken(t *testing.T) {
-	fmt.Printf("In it to win it")
+
+func TestToken(t *testing.T) {
+	token := GenerateToken()
+	fmt.Printf("Token.IntValue    = %d\n", token.IntValue)
+	fmt.Printf("Token.StringValue = %s\n", token.StringValue)
 }
