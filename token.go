@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"math/rand"
 	"time"
+	"hash/crc32"
 )
 
 func init() {
@@ -34,9 +35,9 @@ func GenerateToken() (token Token) {
 	hash := sha256.New()
 	hash.Write(rndString)
 	md := hash.Sum(nil)
-	Token.StringValue = hex.EncodeToString(md)
-	Token.IntValue = crc32.ChecksumIEEE(md)
-    fmt.Printf("This is my value %d\n", Token.IntValue)
+	token.StringValue = hex.EncodeToString(md)
+	token.IntValue = crc32.ChecksumIEEE(md)
+    fmt.Printf("This is my value %d\n", token.IntValue)
     return
 }
 

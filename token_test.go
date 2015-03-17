@@ -6,5 +6,5 @@ import (
 )
 
 func testToken(t *testing.T) {
-	fmt.Printf(GenerateToken())
+	fmt.Printf("In it to win it")
 }
