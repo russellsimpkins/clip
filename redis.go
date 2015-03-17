@@ -6,12 +6,30 @@ import (
 )
 
 type RedisHelper struct {
-
+	Conn redis.Conn
 }
 
 type Helper interface {
+	New() (h Helper)
 	GetKey(key string) (hash uint64)
 	GetConn() (conn redis.Conn, err error)
+	GetNextVal(key string) (id uint32, err error)
+	Close()
+}
+
+func NewRedisHelper() (r RedisHelper) {
+	r = RedisHelper{}
+	_, err := r.GetConn()
+	if err != nil {
+		return
+	}
+	return
+}
+
+func (h *RedisHelper) Close() {
+	if h.Conn != nil {
+		h.Conn.Close()
+	}
 }
 
 func (h *RedisHelper) GetKey(key string) (hash uint64) {
@@ -23,5 +41,29 @@ func (h *RedisHelper) GetKey(key string) (hash uint64) {
 
 func (h *RedisHelper) GetConn() (conn redis.Conn, err error) {
 	conn, err = redis.Dial("tcp", ":6379")
+	if err != nil {
+		return
+	}
+	h.Conn = conn
+	return
+}
+
+// this is my utility function for autoincrements
+func (h *RedisHelper) GetNextVal(key string) (id int64, err error) {
+	sql := "INCR"
+	var (
+		reply interface{}
+	)
+	reply, err = h.Conn.Do(sql, key)
+	if err != nil {
+		return
+	}
+	id, err = redis.Int64(reply, err)
+	return
+}
+
+// this utility function attempts to store a key value pair
+func (h *RedisHelper) Store(key string, data []byte) (err error) {
+	_, err = h.Conn.Do("SET", []byte(key), data)
 	return
 }
