@@ -67,6 +67,11 @@ func (h *RedisHelper) Store(key string, data []byte) (err error) {
 	return
 }
 
+func (h *RedisHelper) Delete(key string) (err error) {
+	_, err = h.Conn.Do("DEL", []byte(key), data)
+	return
+}
+
 // this utility function attempts to store a key value pair
 func (h *RedisHelper) Fetch(key string) (data []byte, err error) {
 	var reply interface{}
