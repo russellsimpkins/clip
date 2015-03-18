@@ -35,6 +35,30 @@ func DeleteTeamHandler(writer http.ResponseWriter, req *http.Request) {
 	return
 }
 
+func GetTeamsHandler(writer http.ResponseWriter, req *http.Request) {
+	var (
+		r     RedisHelper
+		body  []byte
+		items []string
+		teams Teams
+	)
+	r = NewRedisHelper()
+	teams = Teams{}
+	defer r.Close()
+	items, _ = r.GetMembers("teams")
+	
+	teams.Teams = items
+	body, err := json.Marshal(teams)
+	if err != nil {
+		// for now, error out if we can't get the existing team
+		str := fmt.Sprintf("Unable to make json of the teams: %s", err)
+		SendError(500, str, writer)
+		return
+	}		
+	writer.Write(body)
+	return
+}
+
 // handler to take requests from the interweb and return the team by name
 func GetTeamHandler(writer http.ResponseWriter, req *http.Request) {
 	var (
@@ -164,7 +188,7 @@ func UpdateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 		SendError(500, str, writer)
 		return
 	}
-	writer.Write(body)	
+	writer.Write(body)
 	return
 }
 
@@ -191,16 +215,21 @@ func AddTeam(team *Team) (err error) {
 		return
 	}
 	data, err = json.Marshal(team)
-
 	if err != nil {
 		return
 	}
+	
 	err = r.Store(key, data)
+	if err != nil {
+		return
+	}
+
+	err = r.AddToSet("teams", team.Name)
 	return
 }
 
 func UpdateTeam(team *Team) (err error) {
-		var (
+	var (
 		r    RedisHelper
 		data []byte
 		key  string
@@ -224,6 +253,11 @@ func DeleteTeam(team *Team) (err error) {
 	r = NewRedisHelper()
 	defer r.Close()
 	key = TeamKey(team)
+	err = r.RemFromSet("teams", team.Name)
+	if err != nil {
+		fmt.Println("The team name: ", team.Name)
+		return
+	}
 	err = r.Delete(key)
 	return
 }
