@@ -15,7 +15,6 @@ type User struct {
 }
 
 type Group struct {
-	id int
 	Name string
 	Access uint8
 	Users []User
@@ -23,7 +22,6 @@ type Group struct {
 }
 
 type Team struct {
-	id int
 	Name string
 	Groups []Group
 	Token []Token
