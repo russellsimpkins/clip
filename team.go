@@ -17,10 +17,7 @@ func FetchTeam(name string) (team Team, err error) {
 	r = NewRedisHelper()
 	defer r.Close()
 	key = fmt.Sprintf("%s:%s", "team:", name)
-	data, err = r.Fetch(key)
-	if err != nil {
-		return
-	}
+	data, _ = r.Fetch(key)
 	json.Unmarshal(data, &team)
 	return
 }
@@ -85,8 +82,8 @@ func CreateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 
 	check, err = FetchTeam(team.Name)
 
-	if err != nil || check.Name != "" {
-		str := fmt.Sprintf("You're creating a team that already exists. error: %s", err)
+	if err != nil || len(check.Name) > 0 {
+		str := fmt.Sprintf("You're creating a team that already exists. error: %s %s", err, check.Name)
 		SendError(500, str, writer)
 		return
 	}
