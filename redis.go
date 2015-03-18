@@ -68,7 +68,7 @@ func (h *RedisHelper) Store(key string, data []byte) (err error) {
 }
 
 func (h *RedisHelper) Delete(key string) (err error) {
-	_, err = h.Conn.Do("DEL", []byte(key), data)
+	_, err = h.Conn.Do("DEL", []byte(key))
 	return
 }
 

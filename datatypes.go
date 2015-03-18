@@ -38,9 +38,10 @@ type Feature struct {
 	Flags map[string]Flag `json:features`
 }
 
-type Flag struct {
+type Flag struct {	
+	Sandbox     int `json:dev`
 	Development int `json:dev`
-	Staging int     `json:stg`
+	Staging     int `json:stg`
 	Integration int `json:int`
-	Production int  `json:prd`
+	Production  int `json:prd`
 }
