@@ -104,19 +104,29 @@ func CreateTokenHandler(writer http.ResponseWriter, req *http.Request) {
 		vars  map[string]string
 	)
 	vars = mux.Vars(req)
-	team, err = GetTeam(vars["team"])
+	team = Team{}
+	team.Name = vars["team"]
 
+	err = GetTeamWithTeam(&team)
 	if err != nil || len(team.Name) <= 0 {
-		str := fmt.Sprintf("You're requesting a token for a non-existant team. team: %s err: %s",
+		str := fmt.Sprintf("You Are requesting a token for a non-existant team. team: %s err: %s",
 			team.Name, err)
 		SendError(500, str, writer)
 		return
 	}
 	token = GenerateToken()
 	token.Team = vars["team"]
+	fmt.Printf("token: %v", token)
 	err = AddToken(&token)
+	
 	if err != nil {
 		str := fmt.Sprintf("There was a problem creating the token. Err: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	body, err = json.Marshal(token)
+	if err != nil {
+		str := fmt.Sprintf("There was a problem Encoding the data. Err: %s", err)
 		SendError(500, str, writer)
 		return
 	}
@@ -209,6 +219,8 @@ func AddToken(token *Token) (err error) {
 	if err != nil {
 		return
 	}
+	key = TokenKey(token)
+	fmt.Printf("Key: %s", key)
 	err = r.Store(key, data)
 	return
 }
