@@ -11,6 +11,8 @@ import (
 )
 
 func SetRoutes(router *mux.Router) {
+
+	router.HandleFunc("/svc/clip/teams", GetTeamsHandler).Methods("GET")
 	router.HandleFunc("/svc/clip/team", CreateTeamHandler).Methods("POST")
 	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\.\\-_]+}", UpdateTeamHandler).Methods("PUT")
 	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\%\\.\\-_]+}", GetTeamHandler).Methods("GET")
@@ -92,7 +94,7 @@ func TestGetTeam(t *testing.T) {
 func TestUpdateTeam(t *testing.T) {
 	var router *mux.Router
 	router = mux.NewRouter()
-	SetRoutes(router)	
+	SetRoutes(router)
 	teams := TeamNames();
 	
 	for idx := range teams {
@@ -125,6 +127,25 @@ func TestUpdateTeam(t *testing.T) {
 			t.Errorf("FAIL: Team %s was not updated correctly", teams[idx])
 		}
 	}
+}
+
+func TestGetTeamList(t *testing.T) {
+	var router *mux.Router
+	router = mux.NewRouter()
+	SetRoutes(router)
+	request, _ := http.NewRequest("GET", "/svc/clip/teams", nil)
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, request)
+	if response.Code != 200 {
+		t.Log(response.Body.String())
+		t.Fail()
+	}
+	s := response.Body.String()
+	if s == "" {
+		t.Errorf("FAIL: We didn't get any teams back")
+	}
+		
+	t.Log(response.Body.String())
 }
 
 func TestCleanTeams(t *testing.T) {
