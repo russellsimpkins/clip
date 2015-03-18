@@ -3,6 +3,12 @@ package clip
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"github.com/gorilla/mux"
+	"io/ioutil"
+	"net/http"
 	"math/rand"
 	"time"
 	"hash/crc32"
@@ -14,14 +20,6 @@ func init() {
 
 func randInt(min int, max int) int {
     return min + rand.Intn(max-min)
-}
-
-func AddToken(token Token) (err error, token1 Token) {
-	return
-}
-
-func DeleteToken(token Token) (err error) {
-	return
 }
 
 func GenerateToken() (token Token) {
@@ -38,6 +36,229 @@ func GenerateToken() (token Token) {
 	token.IntValue = crc32.ChecksumIEEE(md)
     return
 }
+
+//**********************************************************************
+// HTTP HANDLER FUNCTIONS
+//**********************************************************************
+
+// handler to take requests from the interweb and return the token by name
+func DeleteTokenHandler(writer http.ResponseWriter, req *http.Request) {
+	var (
+		err   error
+		token  Token
+		vars  map[string]string
+	)
+	vars = mux.Vars(req)
+	token = Token{}
+	token.StringValue = vars["token"]
+	token.Team = vars["team"]
+	
+	err = DeleteToken(&token)
+	if err != nil {
+		// for now, error out if we can't get the existing token
+		str := fmt.Sprintf("Unable to delete the token: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	SendSuccess(writer)
+	return
+}
+
+// handler to take requests from the interweb and return the token by name
+func GetTokenHandler(writer http.ResponseWriter, req *http.Request) {
+	var (
+		body  []byte
+		err   error
+		token  Token
+		vars  map[string]string
+	)
+	//t := req.Header.Get("Authorization")
+
+	vars = mux.Vars(req)
+	token = Token{}
+	token.StringValue = vars["token"]
+	token.Team = vars["team"]
+	err = GetToken(&token)
+	if err != nil {
+		str := fmt.Sprintf("Unable to fetch the token: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	body, err = json.Marshal(token)
+	if err != nil {
+		str := fmt.Sprintf("There was a problem encoding the token. Err: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	writer.Write(body)
+	return
+}
+
+// handler to take request from the web and create a new token.
+func CreateTokenHandler(writer http.ResponseWriter, req *http.Request) {
+	var (
+		body  []byte
+		err   error
+		token Token
+		team  Team
+		vars  map[string]string
+	)
+	vars = mux.Vars(req)
+	team, err = GetTeam(vars["team"])
+
+	if err != nil || len(team.Name) <= 0 {
+		str := fmt.Sprintf("You're requesting a token for a non-existant team. team: %s err: %s",
+			team.Name, err)
+		SendError(500, str, writer)
+		return
+	}
+	token = GenerateToken()
+	token.Team = vars["team"]
+	err = AddToken(&token)
+	if err != nil {
+		str := fmt.Sprintf("There was a problem creating the token. Err: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	writer.Write(body)	
+	return
+}
+
+// handler to take request from the web and create a new token.
+func UpdateTokenHandler(writer http.ResponseWriter, req *http.Request) {
+	var (
+		body  []byte
+		err   error
+		token Token
+		check Token
+		vars  map[string]string
+	)
+
+	body, err = ioutil.ReadAll(req.Body)
+	if err != nil {
+		str := fmt.Sprintf("Unable to read in the body of the request: %s", body)
+		SendError(500, str, writer)
+		return
+	}
+
+	if body == nil || len(body) == 0 {
+		str := fmt.Sprintf("No body in the request. We're expecting json of the token to create.")
+		SendError(500, str, writer)
+		return
+	}
+
+	err = json.Unmarshal(body, &token)
+
+	if err != nil {
+		str := fmt.Sprintf("There was a problem unmarshaling the json. error: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	vars = mux.Vars(req)
+	check = Token{}
+	check.Team = vars["team"]
+	check.StringValue = vars["token"]
+	err = GetToken(&check)
+
+	if err != nil || len(check.StringValue) < 0 {
+		str := fmt.Sprintf("You're updating that doesn't exists. error: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+
+	// should we delete the old record?
+	if token.StringValue != vars["token"] {
+		// no
+		str := fmt.Sprintf("You're tokens don't match. Panicing")
+		SendError(500, str, writer)
+	}
+	err = UpdateToken(&token)
+	if err != nil {
+		str := fmt.Sprintf("There was a problem updating the token. Err: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	writer.Write(body)	
+	return
+}
+
+//**********************************************************************
+// DAO Methods
+//**********************************************************************
+func TokenKey(token *Token) (key string) {
+	return fmt.Sprintf("%s:%s", token.Team, token.StringValue)
+}
+
+func AddToken(token *Token) (err error) {
+	var (
+		r     RedisHelper
+		data  []byte
+		check Token
+		key   string
+	)
+	r = NewRedisHelper()
+	defer r.Close()
+
+	err = GetToken(token)
+	if &check != nil && check.StringValue == token.StringValue {
+		err = errors.New("You're trying to create a token that already exists.")
+		return
+	}
+	data, err = json.Marshal(token)
+
+	if err != nil {
+		return
+	}
+	err = r.Store(key, data)
+	return
+}
+
+func UpdateToken(token *Token) (err error) {
+		var (
+		r    RedisHelper
+		data []byte
+		key  string
+	)
+	r = NewRedisHelper()
+	defer r.Close()
+	data, err = json.Marshal(token)
+	if err != nil {
+		return
+	}
+	key = TokenKey(token)
+	err = r.Store(key, data)
+	return
+}
+
+func DeleteToken(token *Token) (err error) {
+	var (
+		r     RedisHelper
+		key string
+	)
+	r = NewRedisHelper()
+	defer r.Close()
+	key = TokenKey(token)
+	err = r.Delete(key)
+	return
+}
+
+// Go to redis and get the token. 
+func GetToken(token *Token) (err error) {
+	var (
+		r    RedisHelper
+		data []byte
+		key  string
+	)
+	r = NewRedisHelper()
+	defer r.Close()
+	key = TokenKey(token)
+	data, _ = r.Fetch(key)
+	json.Unmarshal(data, &token)
+	return
+}
+
+
+
 
 
 /*
