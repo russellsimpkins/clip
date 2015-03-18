@@ -177,6 +177,29 @@ func UpdateUserHandler(writer http.ResponseWriter, req *http.Request) {
 	writer.Write(body)
 }
 
+func FetchUserHandler(writer http.ResponseWriter, req *http.Request) {
+	var (
+		body  []byte
+		err   error
+		user  User
+		vars  map[string]string
+	)
+	vars = mux.Vars(req)
+	user, err = FetchUser(vars["email"])
+	if err != nil {
+		str := fmt.Sprintf("There was a problem getting the user. Err: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	body, err = json.Marshal(user)
+	if err != nil {
+		str := fmt.Sprintf("There was a problem encoding the user. Err: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	writer.Write(body)
+}
+
 func SendError(status int, data string, writer http.ResponseWriter) {
 	what := WebResponse{}
 	what.Status = status
