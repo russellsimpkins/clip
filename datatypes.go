@@ -1,5 +1,11 @@
 package clip
 
+type WebResponse struct {
+	Status  int    `json:"status"`
+	Message string `json:"message,omitempty"`
+	Results string `json:"results,omitempty"`
+}
+
 type User struct {
 	First string
 	Last string
