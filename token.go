@@ -114,16 +114,29 @@ func CreateTokenHandler(writer http.ResponseWriter, req *http.Request) {
 		SendError(500, str, writer)
 		return
 	}
+	// create a new token
 	token = GenerateToken()
 	token.Team = vars["team"]
-	fmt.Printf("token: %v", token)
 	err = AddToken(&token)
-	
 	if err != nil {
 		str := fmt.Sprintf("There was a problem creating the token. Err: %s", err)
 		SendError(500, str, writer)
 		return
 	}
+
+	// TODO <- Review when I have more time!
+	if len(team.Token) == 0 {
+		team.Token = make([]Token,1)
+		team.Token[0] = token
+	} else {
+		t := make([]Token, len(team.Token), (cap(team.Token)+1)*2) // +1 in case cap(s) == 0
+		copy(t, team.Token)
+		team.Token = t
+		team.Token = append(team.Token, token)
+	}
+	UpdateTeam(&team)
+
+	
 	body, err = json.Marshal(token)
 	if err != nil {
 		str := fmt.Sprintf("There was a problem Encoding the data. Err: %s", err)
