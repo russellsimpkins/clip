@@ -13,16 +13,16 @@ type User struct {
 }
 
 type Team struct {
-	Name string
-	Users []User
-	Token []Token
+	Name string     `json:"name"`
+	Users []User    `json:"users"`
+	Token []Token   `json:"tokens"`
 }
 
 type Token struct {
-	Team string
-	IntValue uint32
-	StringValue string
-	Applications map[string]Feature `json:apps`
+	Team string      `json:"team"`
+	IntValue uint32  `json:"crc32"`
+	StringValue string `json:"token"`
+	Applications map[string]Feature `json:"apps"`
 }
 
 type Feature struct {
