@@ -7,15 +7,19 @@ type WebResponse struct {
 }
 
 type User struct {
-	First string
-	Last string
-	Email string
+	First string   `json:"first"`
+	Last string    `json:"last"`
+	Email string   `json:"email"`
 }
 
 type Team struct {
 	Name string     `json:"name"`
 	Users []User    `json:"users"`
 	Token []Token   `json:"tokens"`
+}
+
+type Teams struct {
+	Teams []string `json:"teams"`
 }
 
 type Token struct {
@@ -26,14 +30,14 @@ type Token struct {
 }
 
 type Feature struct {
-	Flags map[string]Flag `json:features`
+	Flags map[string]Flag `json:"features"`
 }
 
 type Flag struct {
-	Attribs map[string]int `json:attributes`
-	Sandbox     int `json:sbx`
-	Development int `json:dev`
-	Staging     int `json:stg`
-	Integration int `json:int`
-	Production  int `json:prd`
+	Attribs map[string]int `json:"attributes"`
+	Sandbox     int `json:"sbx"`
+	Development int `json:"dev"`
+	Staging     int `json:"stg"`
+	Integration int `json:"int"`
+	Production  int `json:"prd"`
 }

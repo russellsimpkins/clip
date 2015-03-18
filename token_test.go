@@ -48,7 +48,7 @@ func TestTokenCrud(t *testing.T) {
 	data, _ := json.Marshal(team)
 
 	
-	if 1 == 1 {
+	if 1 == 2 {
 		request, _ = http.NewRequest("POST", "/svc/clip/team", strings.NewReader(string(data)))
 		r.ServeHTTP(w, request)
 
@@ -57,6 +57,7 @@ func TestTokenCrud(t *testing.T) {
 			t.Fail()
 		}
 		t.Log(w.Body.String())
+		
 	} else {
 		request, _ = http.NewRequest("GET", "/svc/clip/team/DU", nil)
 		r.ServeHTTP(w, request)
@@ -64,7 +65,7 @@ func TestTokenCrud(t *testing.T) {
 			t.Log("ERROR: ", w.Body.String())
 			t.Fail()
 		}
-		t.Log(w.Body.String())
+		//t.Log(w.Body.String())
 		_ = json.Unmarshal([]byte(w.Body.String()), &team)
 	}
 
@@ -72,20 +73,38 @@ func TestTokenCrud(t *testing.T) {
 
 	
 	// Create a token
-	w = httptest.NewRecorder()	
-	request, _ = http.NewRequest("POST", "/svc/clip/team/DU/token", nil)
-	r.ServeHTTP(w, request)
-	t.Log(w.Body.String())
-	if w.Code != 200 {
-		t.Log("ERROR: ", w.Body.String())
-		t.Fail()
+	if 1 == 2 {
+		w = httptest.NewRecorder()	
+		request, _ = http.NewRequest("POST", "/svc/clip/team/DU/token", nil)
+		r.ServeHTTP(w, request)
+		t.Log(w.Body.String())
+		if w.Code != 200 {
+			t.Log("ERROR: ", w.Body.String())
+			t.Fail()
+		}
+
+		_ = json.Unmarshal([]byte(w.Body.String()), &team)
 	}
-
-
 	
-
+	
+	
+	team.Token[0].Applications = make(map[string]Feature, 2)
+	f := Feature{}
+	f.Flags = make(map[string]Flag, 2)
+	fl := f.Flags["chocolate"]
+	fl.Sandbox = 1
+	fl.Development = 1
+	fl.Attribs = make(map[string]int, 1)
+	fl.Attribs["displayFE"] = 1
+	f.Flags["chocolate"] = fl
+	team.Token[0].Applications["doughnuts"] = f
+	
+	
+	data, _ = json.Marshal(team)
+	//t.Log(string(data))
+	
 	// Update a token 
-	if 1 == 1 {
+	if 1 == 2 {
 		w = httptest.NewRecorder()
 		request, _ = http.NewRequest("DELETE", "/svc/clip/team/DU", nil)
 		r.ServeHTTP(w, request)

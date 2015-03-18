@@ -60,7 +60,7 @@ func AddUser(user *User) (err error) {
 func DeleteUser(email string) (err error) {
 	var r RedisHelper
 	r = NewRedisHelper()
-	err = r.PopFromSet("users", email)
+	err = r.RemFromSet("users", email)
 	err = r.Delete(email)
 	return
 }
@@ -82,7 +82,7 @@ func UpdateUser(origEmail string, user *User) (err error) {
 		if err != nil {
 			return
 		}
-		err = r.PopFromSet("users", origEmail)
+		err = r.RemFromSet("users", origEmail)
 		if err != nil {
 			return
 		}
