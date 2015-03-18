@@ -67,8 +67,23 @@ func (h *RedisHelper) AddToSet(set string, item string) (err error) {
 	return
 }
 
-func (h *RedisHelper) PopFromSet(set string, item string) (err error) {
-	_, err = h.Conn.Do("SPOP", set, item);
+func (h *RedisHelper) RemFromSet(set string, item string) (err error) {
+	_, err = h.Conn.Do("SREM", set, item);
+	return
+}
+
+func (h *RedisHelper) GetMembers(set string) (items []string, err error) {
+	var (
+		reply interface{}
+	)
+	reply, err = h.Conn.Do("SMEMBERS", set);
+	if err != nil {
+		return
+	}
+	items, err = redis.Strings(reply, err)
+	if err != nil {
+		return
+	}
 	return
 }
 
