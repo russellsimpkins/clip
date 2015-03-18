@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"github.com/gorilla/mux"
 	"io/ioutil"
-	"log"
 	"net/http"
 )
 
@@ -179,10 +178,10 @@ func UpdateUserHandler(writer http.ResponseWriter, req *http.Request) {
 
 func FetchUserHandler(writer http.ResponseWriter, req *http.Request) {
 	var (
-		body  []byte
-		err   error
-		user  User
-		vars  map[string]string
+		body []byte
+		err  error
+		user User
+		vars map[string]string
 	)
 	vars = mux.Vars(req)
 	user, err = FetchUser(vars["email"])
@@ -198,15 +197,4 @@ func FetchUserHandler(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 	writer.Write(body)
-}
-
-func SendError(status int, data string, writer http.ResponseWriter) {
-	what := WebResponse{}
-	what.Status = status
-	what.Message = data
-	body, _ := json.Marshal(what)
-	out := string(body)
-	log.Print(out)
-	http.Error(writer, out, status)
-	return
 }
