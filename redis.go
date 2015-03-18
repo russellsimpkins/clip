@@ -1,6 +1,7 @@
 package clip
 
 import (
+	"fmt"
 	"github.com/garyburd/redigo/redis"
 	"hash/fnv"
 )
@@ -61,8 +62,21 @@ func (h *RedisHelper) GetNextVal(key string) (id int64, err error) {
 	return
 }
 
+func (h *RedisHelper) AddToSet(set string, item string) (err error) {
+	_, err = h.Conn.Do("SADD", set, item);
+	return
+}
+
+func (h *RedisHelper) PopFromSet(set string, item string) (err error) {
+	_, err = h.Conn.Do("SPOP", set, item);
+	return
+}
+
 // this utility function attempts to store a key value pair
 func (h *RedisHelper) Store(key string, data []byte) (err error) {
+	if 1 == 2 {
+		fmt.Println("key: %s\n", key)
+	}
 	_, err = h.Conn.Do("SET", []byte(key), data)
 	return
 }

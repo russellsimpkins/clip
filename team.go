@@ -44,7 +44,7 @@ func GetTeamHandler(writer http.ResponseWriter, req *http.Request) {
 		vars  map[string]string
 	)
 	//t := req.Header.Get("Authorization")
-
+	
 	vars = mux.Vars(req)
 	team, err = GetTeam(vars["name"])
 	if err != nil {
@@ -102,6 +102,7 @@ func CreateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 
 	err = AddTeam(&team)
 	if err != nil {
+
 		str := fmt.Sprintf("There was a problem creating the team. Err: %s", err)
 		SendError(500, str, writer)
 		return
@@ -171,7 +172,7 @@ func UpdateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 // DAO Methods
 //**********************************************************************
 func TeamKey(team *Team) (key string) {
-	return fmt.Sprintf("%s:%s", "team:", team.Name)
+	return fmt.Sprintf("%s%s", "team:", team.Name)
 }
 
 func AddTeam(team *Team) (err error) {
@@ -236,7 +237,22 @@ func GetTeam(name string) (team Team, err error) {
 	)
 	r = NewRedisHelper()
 	defer r.Close()
-	key = fmt.Sprintf("%s:%s", "team:", name)
+	key = fmt.Sprintf("%s:%s", "team", name)
+	data, _ = r.Fetch(key)
+	json.Unmarshal(data, &team)
+	return
+}
+
+// Go to redis and get the team. 
+func GetTeamWithTeam(team *Team) (err error) {
+	var (
+		r    RedisHelper
+		data []byte
+		key  string
+	)
+	r = NewRedisHelper()
+	defer r.Close()
+	key = fmt.Sprintf("%s:%s", "team", team.Name)
 	data, _ = r.Fetch(key)
 	json.Unmarshal(data, &team)
 	return

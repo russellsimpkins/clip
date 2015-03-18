@@ -46,6 +46,12 @@ func AddUser(user *User) (err error) {
 	if err != nil {
 		return
 	}
+
+	err = r.AddToSet("users", user.Email)
+	if err != nil {
+		return
+	}
+	
 	err = r.Store(user.Email, data)
 	return
 }
@@ -54,7 +60,8 @@ func AddUser(user *User) (err error) {
 func DeleteUser(email string) (err error) {
 	var r RedisHelper
 	r = NewRedisHelper()
-	_, err = r.Conn.Do("DEL", email)
+	err = r.PopFromSet("users", email)
+	err = r.Delete(email)
 	return
 }
 
@@ -71,12 +78,22 @@ func UpdateUser(origEmail string, user *User) (err error) {
 		return
 	}
 	if origEmail != user.Email {
-		_, err = r.Conn.Do("DEL", origEmail)
+		err = r.Delete(origEmail)
+		if err != nil {
+			return
+		}
+		err = r.PopFromSet("users", origEmail)
 		if err != nil {
 			return
 		}
 	}
+	
 	err = r.Store(user.Email, data)
+	if err != nil {
+		return
+	}
+	
+	err = r.AddToSet("user", user.Email)
 	return
 }
 
@@ -84,12 +101,12 @@ func UpdateUser(origEmail string, user *User) (err error) {
 func CreateUserHandler(writer http.ResponseWriter, req *http.Request) {
 	var (
 		body []byte
-		vars map[string]string
+		//vars map[string]string
 		err  error
 		user User
 	)
 
-	vars = mux.Vars(req)
+	//vars = mux.Vars(req)
 	body, err = ioutil.ReadAll(req.Body)
 
 	if err != nil {
@@ -112,9 +129,6 @@ func CreateUserHandler(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 
-	if vars["email"] != user.Email {
-
-	}
 	err = AddUser(&user)
 
 	if err != nil {

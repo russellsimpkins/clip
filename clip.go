@@ -24,5 +24,6 @@ func SendSuccess(writer http.ResponseWriter) {
 	what.Status = 200
 	what.Message = "success"
 	body, _ := json.Marshal(what)
+	log.Print(string(body))
 	writer.Write(body)
 }

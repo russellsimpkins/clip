@@ -12,7 +12,9 @@ func TestAddUser(t *testing.T) {
 	user.Last = "Simpkins"
 	user.Email = "russell.simpkins@nytimes.com"
 
-	err := AddUser(&user)
+	err := DeleteUser(user.Email)
+	
+	err = AddUser(&user)
 	if err != nil {
 		t.Log("There was an error: ", err)
 		t.Fail()
@@ -41,10 +43,12 @@ func TestAddUser(t *testing.T) {
 		t.Fail()
 	}
 
+	if 1 == 2 {
 	err = DeleteUser(user.Email)
-	if err != nil {
-		t.Log("There was an error: ", err)
-		t.Fail()
+		if err != nil {
+			t.Log("There was an error: ", err)
+			t.Fail()
+		}
 	}
 
 }

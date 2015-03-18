@@ -10,20 +10,11 @@ type User struct {
 	First string
 	Last string
 	Email string
-	Groups []string
-	Teams []Team
-}
-
-type Group struct {
-	Name string
-	Access uint8
-	Users []User
-	Teams []Team
 }
 
 type Team struct {
 	Name string
-	Groups []Group
+	Users []User
 	Token []Token
 }
 
