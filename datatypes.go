@@ -28,6 +28,7 @@ type Teams struct {
 
 type Token struct {
 	Team string      `json:"team"`
+	Name string      `json:"name"`
 	IntValue uint32  `json:"crc32"`
 	StringValue string `json:"token"`
 	Applications map[string]Feature `json:"apps"`
