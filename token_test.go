@@ -10,6 +10,21 @@ import (
 	"testing"
 )
 
+func setRoutes(router *mux.Router) {
+
+	router.HandleFunc("/svc/clip/teams", GetTeamsHandler).Methods("GET")
+	router.HandleFunc("/svc/clip/team", CreateTeamHandler).Methods("POST")
+	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\.\\-_]+}", UpdateTeamHandler).Methods("PUT")
+	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\%\\.\\-_]+}", GetTeamHandler).Methods("GET")
+	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\%\\.\\-_]+}", DeleteTeamHandler).Methods("DELETE")
+	// token routes
+	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\.\\-_]+}/token", CreateTokenHandler).Methods("POST")
+	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\.\\-_]+}/token/{token:[a-zA-Z0-9]+}", UpdateTokenHandler).Methods("PUT")
+	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\%\\.\\-_]+}/token/{token:[a-zA-Z0-9]+}", GetTokenHandler).Methods("GET")
+	router.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\%\\.\\-_]+}/token/{token:[a-zA-Z0-9]+}", DeleteTokenHandler).Methods("DELETE")
+	return
+}
+
 
 func TestToken(t *testing.T) {
 	token := GenerateToken()
@@ -17,96 +32,74 @@ func TestToken(t *testing.T) {
 	fmt.Printf("Token.StringValue = %s\n", token.StringValue)
 }
 
-func TestTokenCrud(t *testing.T) {
-	w := httptest.NewRecorder()
-	r := mux.NewRouter()
+func setupTeam() (team Team) {
 
-	//**********************************************************************
-	// ROUTES
-	//----------------------------------------------------------------------
-	r.HandleFunc("/svc/clip/team", CreateTeamHandler).Methods("POST")
-	r.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\%\\.\\-_]+}", DeleteTeamHandler).Methods("DELETE")
-	r.HandleFunc("/svc/clip/team/{name:[a-zA-Z0-9 \\%\\.\\-_]+}", GetTeamHandler).Methods("GET")
-
-
-	r.HandleFunc("/svc/clip/team/{team:[a-zA-Z0-9 \\%\\.\\-_]+}/token/{token:[a-zA-Z0-9]+}",
-		GetTokenHandler).Methods("GET")
-	r.HandleFunc("/svc/clip/team/{team:[a-zA-Z0-9 \\.\\-_]+}/token",
-		CreateTokenHandler).Methods("POST")
-	r.HandleFunc("/svc/clip/team/{team:[a-zA-Z0-9 \\.\\-_]+}/token/{token:[a-zA-Z0-9]+}",
-		UpdateTokenHandler).Methods("PUT")
-	r.HandleFunc("/svc/clip/team/{team:[a-zA-Z0-9 \\%\\.\\-_]+}/token/{token:[a-zA-Z0-9]+}",
-		DeleteTokenHandler).Methods("DELETE")
-
+	var (
+		router *mux.Router
+		request *http.Request
+	)
 	
-
-	var request *http.Request
-
-	// Create a team
-	team := Team{}
-	team.Name = "DU"
+	router = mux.NewRouter()
+	setRoutes(router)
+	team = Team{}
+	team.Name = "Test"
 	data, _ := json.Marshal(team)
+	request, _ = http.NewRequest("POST", "/svc/clip/team", strings.NewReader(string(data)))
+	response := httptest.NewRecorder()
+	router.ServeHTTP(response, request)
+	return
+}
 
+
+func TestTokenCrud(t *testing.T) {
 	
-	if 1 == 2 {
-		request, _ = http.NewRequest("POST", "/svc/clip/team", strings.NewReader(string(data)))
-		r.ServeHTTP(w, request)
-
-		if w.Code != 200 {
-			t.Log("ERROR: ", w.Body.String())
-			t.Fail()
-		}
-		t.Log(w.Body.String())
+	var (
+		router *mux.Router
+		request *http.Request
+	)
+	
+	router = mux.NewRouter()
+	SetRoutes(router)
+	
+	// Create a team
+	team := setupTeam()
 		
-	} else {
-		request, _ = http.NewRequest("GET", "/svc/clip/team/DU", nil)
-		r.ServeHTTP(w, request)
-		if w.Code != 200 {
-			t.Log("ERROR: ", w.Body.String())
-			t.Fail()
-		}
-		//t.Log(w.Body.String())
-		_ = json.Unmarshal([]byte(w.Body.String()), &team)
-	}
-
-
-
-	
-	// Create a token
-	if 1 == 2 {
-		w = httptest.NewRecorder()	
-		request, _ = http.NewRequest("POST", "/svc/clip/team/DU/token", nil)
-		r.ServeHTTP(w, request)
-		t.Log(w.Body.String())
-		if w.Code != 200 {
-			t.Log("ERROR: ", w.Body.String())
-			t.Fail()
-		}
-
-		_ = json.Unmarshal([]byte(w.Body.String()), &team)
+	w := httptest.NewRecorder()	
+	request, _ = http.NewRequest("POST", "/svc/clip/team/DU/token", nil)
+	router.ServeHTTP(w, request)
+	t.Log(w.Body.String())
+	if w.Code != 200 {
+		t.Log("ERROR: ", w.Body.String())
+		t.Fail()
 	}
 	
+	_ = json.Unmarshal([]byte(w.Body.String()), &team)
+	
+	//team.Token[0].Applications = make(map[string]Feature, 2)
+	//f := Feature{}
+	//f.Flags = make(map[string]Flag, 2)
+	//fl := f.Flags["chocolate"]
+	//fl.Sandbox = 1
+	//fl.Development = 1
+	//fl.Attribs = make(map[string]int, 1)
+	//fl.Attribs["displayFE"] = 1
+	//f.Flags["chocolate"] = fl
+	//team.Token[0].Applications["doughnuts"] = f
 	
 	
-	team.Token[0].Applications = make(map[string]Feature, 2)
-	f := Feature{}
-	f.Flags = make(map[string]Flag, 2)
-	fl := f.Flags["chocolate"]
-	fl.Sandbox = 1
-	fl.Development = 1
-	fl.Attribs = make(map[string]int, 1)
-	fl.Attribs["displayFE"] = 1
-	f.Flags["chocolate"] = fl
-	team.Token[0].Applications["doughnuts"] = f
+	data, _ := json.Marshal(team)
+	t.Log(string(data))
+	cleanUp(&team)
+}
+
+func cleanUp(team *Team) {
+
+	var router *mux.Router
+	router = mux.NewRouter()
+	SetRoutes(router)
+	response := httptest.NewRecorder()
+
+	request, _ := http.NewRequest("DELETE", fmt.Sprintf("/svc/clip/team/%s", team.Name), nil)
+	router.ServeHTTP(response, request)
 	
-	
-	data, _ = json.Marshal(team)
-	//t.Log(string(data))
-	
-	// Update a token 
-	if 1 == 2 {
-		w = httptest.NewRecorder()
-		request, _ = http.NewRequest("DELETE", "/svc/clip/team/DU", nil)
-		r.ServeHTTP(w, request)
-	}
 }
