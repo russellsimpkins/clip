@@ -99,7 +99,7 @@ func TestTokenCrud(t *testing.T) {
 	request, _ = http.NewRequest("PUT", url, strings.NewReader(string(data)))
 	router.ServeHTTP(w, request)
 	t.Log(w.Body.String())
-	cleanUp(&team)
+	//cleanUp(&team)
 }
 
 func cleanUp(team *Team) {
