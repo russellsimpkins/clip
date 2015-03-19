@@ -58,7 +58,7 @@ func GetTeamsHandler(writer http.ResponseWriter, req *http.Request) {
 	}
 	
 	body, err = json.Marshal(teams)
-	fmt.Printf(string(body))
+	//fmt.Printf(string(body))
 	if err != nil {
 		// for now, error out if we can't get the existing team
 		str := fmt.Sprintf("Unable to make json of the teams: %s", err)
@@ -275,17 +275,15 @@ func DeleteTeam(team *Team) (err error) {
 	key = TeamKey(team)
 	err = r.RemFromSet("teams", team.Name)
 	if err != nil {
-		fmt.Println("The team name: ", team.Name)
+		//fmt.Println("The team name: ", team.Name)
 		return
 	}
 	if len(team.Token) > 0 {
-		fmt.Println("DELETETING TOKENS")
+		//fmt.Println("DELETETING TOKENS")
 		for idx := range team.Token {
 			tok := team.Token[idx]
 			DeleteToken(&tok)
 		}
-	} else {
-		fmt.Println("NO TKENS")
 	}
 	err = r.Delete(key)
 	return
