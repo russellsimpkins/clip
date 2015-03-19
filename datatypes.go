@@ -18,8 +18,12 @@ type Team struct {
 	Token []Token   `json:"tokens"`
 }
 
+type Names struct {
+	Name string     `json:"teamName"`
+}
+
 type Teams struct {
-	Teams []string `json:"teams"`
+	Teams []Names `json:"teams"`
 }
 
 type Token struct {
