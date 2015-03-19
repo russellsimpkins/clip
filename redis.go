@@ -62,11 +62,13 @@ func (h *RedisHelper) GetNextVal(key string) (id int64, err error) {
 	return
 }
 
+// utility to add an item to a set
 func (h *RedisHelper) AddToSet(set string, item string) (err error) {
 	_, err = h.Conn.Do("SADD", set, item);
 	return
 }
 
+// utility to remove an item to a set
 func (h *RedisHelper) RemFromSet(set string, item string) (err error) {
 	_, err = h.Conn.Do("SREM", set, item);
 	return
@@ -96,6 +98,7 @@ func (h *RedisHelper) Store(key string, data []byte) (err error) {
 	return
 }
 
+// utility to delete a key
 func (h *RedisHelper) Delete(key string) (err error) {
 	_, err = h.Conn.Do("DEL", []byte(key))
 	return
