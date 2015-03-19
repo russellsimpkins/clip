@@ -10,7 +10,10 @@ func TestPutRedis(t *testing.T) {
 		id  int64
 		err error
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 
 	id, err = r.GetNextVal("sys.Token")
