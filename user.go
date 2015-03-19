@@ -14,7 +14,10 @@ func FetchUser(email string) (user User, err error) {
 		r    RedisHelper
 		data []byte
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 	data, err = r.Fetch(email)
 	if err != nil {
@@ -32,7 +35,10 @@ func AddUser(user *User) (err error) {
 		check User
 	)
 
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 
 	check, err = FetchUser(user.Email)
@@ -59,7 +65,10 @@ func AddUser(user *User) (err error) {
 // since email is the key, this is all we need
 func DeleteUser(email string) (err error) {
 	var r RedisHelper
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	err = r.RemFromSet("users", email)
 	err = r.Delete(email)
 	return
@@ -71,7 +80,10 @@ func UpdateUser(origEmail string, user *User) (err error) {
 		r    RedisHelper
 		data []byte
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 	data, err = json.Marshal(user)
 	if err != nil {
