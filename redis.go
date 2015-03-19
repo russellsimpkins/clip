@@ -17,9 +17,9 @@ type Helper interface {
 	Close()
 }
 
-func NewRedisHelper() (r RedisHelper) {
+func NewRedisHelper() (r RedisHelper, err error) {
 	r = RedisHelper{}
-	_, err := r.GetConn()
+	_, err = r.GetConn()
 	if err != nil {
 		return
 	}
@@ -92,7 +92,7 @@ func (h *RedisHelper) GetMembers(set string) (items []string, err error) {
 // this utility function attempts to store a key value pair
 func (h *RedisHelper) Store(key string, data []byte) (err error) {
 	if 1 == 2 {
-		fmt.Println("key: %s\n", key)
+		fmt.Printf("key: %s\n", key)
 	}
 	_, err = h.Conn.Do("SET", []byte(key), data)
 	return
@@ -109,7 +109,13 @@ func (h *RedisHelper) Fetch(key string) (data []byte, err error) {
 	var reply interface{}
 	var sniff string
 	reply, err = h.Conn.Do("GET", key)
+	if err != nil {
+		return
+	}
 	sniff, err = redis.String(reply, err)
+	if err != nil {
+		return
+	}
 	data = []byte(sniff)
 	return
 }
