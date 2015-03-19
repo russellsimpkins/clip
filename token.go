@@ -115,8 +115,39 @@ func CreateTokenHandler(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 	// create a new token
-	token = GenerateToken()
-	token.Team = vars["team"]
+	
+
+	// Get the post data
+	if req.Body != nil {
+		body, err = ioutil.ReadAll(req.Body)
+		if err != nil {
+			str := fmt.Sprintf("Unable to read in the body of the request: %s", body)
+			SendError(500, str, writer)
+			return
+		}
+		
+		if body == nil || len(body) == 0 {
+			str := fmt.Sprintf("No body in the request. We're expecting json of the token to create.")
+			SendError(500, str, writer)
+			return
+		}
+		
+		err = json.Unmarshal(body, &token)
+		
+		if err != nil {
+			str := fmt.Sprintf("There was a problem unmarshaling the json. error: %s", err)
+			SendError(500, str, writer)
+			return
+		}
+
+		gtoken := GenerateToken()
+		token.Team = vars["team"]
+		token.StringValue = gtoken.StringValue
+		token.IntValue = gtoken.IntValue
+	} else {
+		token = GenerateToken()
+		token.Team = vars["team"]
+	}
 	err = AddToken(&token)
 	if err != nil {
 		str := fmt.Sprintf("There was a problem creating the token. Err: %s", err)
@@ -126,11 +157,9 @@ func CreateTokenHandler(writer http.ResponseWriter, req *http.Request) {
 
 	// TODO <- Review when I have more time!
 	if len(team.Token) == 0 {
-		fmt.Println("HERE A")
 		team.Token = make([]Token,1)
 		team.Token[0] = token
 	} else {
-		fmt.Println("HERE B")
 		t := make([]Token, len(team.Token), (cap(team.Token)+1)*2) // +1 in case cap(s) == 0
 		copy(t, team.Token)
 		team.Token = t
