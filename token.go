@@ -106,7 +106,7 @@ func CreateTokenHandler(writer http.ResponseWriter, req *http.Request) {
 	vars = mux.Vars(req)
 	team = Team{}
 	team.Name = vars["team"]
-
+	//fmt.Println("Team: ", vars)
 	err = GetTeamWithTeam(&team)
 	if err != nil || len(team.Name) <= 0 {
 		str := fmt.Sprintf("You Are requesting a token for a non-existant team. team: %s err: %s",
@@ -126,9 +126,11 @@ func CreateTokenHandler(writer http.ResponseWriter, req *http.Request) {
 
 	// TODO <- Review when I have more time!
 	if len(team.Token) == 0 {
+		fmt.Println("HERE A")
 		team.Token = make([]Token,1)
 		team.Token[0] = token
 	} else {
+		fmt.Println("HERE B")
 		t := make([]Token, len(team.Token), (cap(team.Token)+1)*2) // +1 in case cap(s) == 0
 		copy(t, team.Token)
 		team.Token = t
@@ -219,7 +221,10 @@ func AddToken(token *Token) (err error) {
 		check Token
 		key   string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 
 	err = GetToken(token)
@@ -244,7 +249,10 @@ func UpdateToken(token *Token) (err error) {
 		data []byte
 		key  string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 	data, err = json.Marshal(token)
 	if err != nil {
@@ -260,7 +268,10 @@ func DeleteToken(token *Token) (err error) {
 		r     RedisHelper
 		key string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 	key = TokenKey(token)
 	err = r.Delete(key)
@@ -274,7 +285,10 @@ func GetToken(token *Token) (err error) {
 		data []byte
 		key  string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 	key = TokenKey(token)
 	data, _ = r.Fetch(key)
