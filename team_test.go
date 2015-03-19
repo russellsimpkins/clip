@@ -134,5 +134,5 @@ func TestGetTeamList(t *testing.T) {
 }
 
 func TestCleanTeams(t *testing.T) {
-	CleanTeams()
+	//CleanTeams()
 }

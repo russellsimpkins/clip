@@ -49,10 +49,16 @@ func GetTeamsHandler(writer http.ResponseWriter, req *http.Request) {
 	}
 	teams = Teams{}
 	defer r.Close()
-	items, _ = r.GetMembers("teams")
 	
-	teams.Teams = items
+	items, _ = r.GetMembers("teams")
+	teams.Teams = make([]Names, len(items))
+	for idx := range items {
+		teams.Teams[idx] = Names{}
+		teams.Teams[idx].Name = items[idx]
+	}
+	
 	body, err = json.Marshal(teams)
+	fmt.Printf(string(body))
 	if err != nil {
 		// for now, error out if we can't get the existing team
 		str := fmt.Sprintf("Unable to make json of the teams: %s", err)

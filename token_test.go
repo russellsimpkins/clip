@@ -49,7 +49,7 @@ func TestTokenCrud(t *testing.T) {
 	
 	// Create a team
 	team := Team{}
-	team.Name = "Test"
+	team.Name = "Data Universe"
 	setupTeam(&team)
 	t.Log("INFO: team: ", team)
 
