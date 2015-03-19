@@ -22,7 +22,7 @@ func DeleteTeamHandler(writer http.ResponseWriter, req *http.Request) {
 	)
 	vars = mux.Vars(req)
 	team = Team{}
-	team.Name = vars["name"]
+	team.Name = vars["team"]
 	
 	err = DeleteTeam(&team)
 	if err != nil {
@@ -74,7 +74,7 @@ func GetTeamHandler(writer http.ResponseWriter, req *http.Request) {
 	//t := req.Header.Get("Authorization")
 	
 	vars = mux.Vars(req)
-	team, err = GetTeam(vars["name"])
+	team, err = GetTeam(vars["team"])
 	if err != nil {
 		str := fmt.Sprintf("Unable to fetch the team: %s", err)
 		SendError(500, str, writer)
@@ -161,7 +161,7 @@ func UpdateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 		return
 	}
 	vars = mux.Vars(req)
-	check, err = GetTeam(vars["name"])
+	check, err = GetTeam(vars["team"])
 
 	if err != nil || len(check.Name) < 0 {
 		str := fmt.Sprintf("You're updating that doesn't exists. error: %s %s", err, check.Name)
@@ -170,7 +170,7 @@ func UpdateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 	}
 
 	// should we delete the old record?
-	if team.Name != vars["name"] {
+	if team.Name != vars["team"] {
 		// yes
 		DeleteTeam(&check)
 		err = AddTeam(&team)
@@ -247,12 +247,12 @@ func UpdateTeam(team *Team) (err error) {
 		return
 	}
 	// iterate over all tokens and update the token information
-	//if len(team.Token) > 0 {
-	//	for idx := range team.Token {
-	//		tok := team.Token[idx]
-	//		UpdateToken(&tok)
-	//	}
-	//}
+	if len(team.Token) > 0 {
+		for idx := range team.Token {
+			tok := team.Token[idx]
+			UpdateToken(&tok)
+		}
+	}
 	return
 }
 
