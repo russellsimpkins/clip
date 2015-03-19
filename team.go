@@ -23,7 +23,7 @@ func DeleteTeamHandler(writer http.ResponseWriter, req *http.Request) {
 	vars = mux.Vars(req)
 	team = Team{}
 	team.Name = vars["team"]
-	
+	GetTeamWithTeam(&team)
 	err = DeleteTeam(&team)
 	if err != nil {
 		// for now, error out if we can't get the existing team
@@ -271,6 +271,15 @@ func DeleteTeam(team *Team) (err error) {
 	if err != nil {
 		fmt.Println("The team name: ", team.Name)
 		return
+	}
+	if len(team.Token) > 0 {
+		fmt.Println("DELETETING TOKENS")
+		for idx := range team.Token {
+			tok := team.Token[idx]
+			DeleteToken(&tok)
+		}
+	} else {
+		fmt.Println("NO TKENS")
 	}
 	err = r.Delete(key)
 	return
