@@ -54,9 +54,12 @@ func TestTokenCrud(t *testing.T) {
 	t.Log("INFO: team: ", team)
 
 	w := httptest.NewRecorder()
+	tok := Token{}
+	tok.Name = "FrontendAPIs"
+	data, _ := json.Marshal(tok)
 	url := fmt.Sprintf("/svc/clip/team/%s/token", team.Name)
 	//t.Log("INFO: url: ", url)
-	request, _ = http.NewRequest("POST", url, nil)
+	request, _ = http.NewRequest("POST", url, strings.NewReader(string(data)))
 	
 	router.ServeHTTP(w, request)
 	t.Log(w.Body.String())
@@ -88,7 +91,7 @@ func TestTokenCrud(t *testing.T) {
 	team.Token[0].Applications["doughnuts"] = f
 	
 	
-	data, _ := json.Marshal(team)
+	data, _ = json.Marshal(team)
 	
 	t.Log(string(data))
 
