@@ -41,14 +41,18 @@ func GetTeamsHandler(writer http.ResponseWriter, req *http.Request) {
 		body  []byte
 		items []string
 		teams Teams
-	)
-	r = NewRedisHelper()
+		err   error
+	)	
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	teams = Teams{}
 	defer r.Close()
 	items, _ = r.GetMembers("teams")
 	
 	teams.Teams = items
-	body, err := json.Marshal(teams)
+	body, err = json.Marshal(teams)
 	if err != nil {
 		// for now, error out if we can't get the existing team
 		str := fmt.Sprintf("Unable to make json of the teams: %s", err)
@@ -92,7 +96,6 @@ func CreateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 		body  []byte
 		err   error
 		team  Team
-		check Team
 	)
 
 	body, err = ioutil.ReadAll(req.Body)
@@ -115,15 +118,7 @@ func CreateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 		SendError(500, str, writer)
 		return
 	}
-
-	check, err = GetTeam(team.Name)
-
-	if err != nil || len(check.Name) > 0 {
-		str := fmt.Sprintf("You're creating a team that already exists. error: %s %s", err, check.Name)
-		SendError(500, str, writer)
-		return
-	}
-
+	//fmt.Println("Team is: ", team)
 	err = AddTeam(&team)
 	if err != nil {
 
@@ -196,6 +191,7 @@ func UpdateTeamHandler(writer http.ResponseWriter, req *http.Request) {
 // DAO Methods
 //**********************************************************************
 func TeamKey(team *Team) (key string) {
+	//fmt.Println("Name is: ", team.Name)
 	return fmt.Sprintf("%s%s", "team:", team.Name)
 }
 
@@ -206,10 +202,12 @@ func AddTeam(team *Team) (err error) {
 		check Team
 		key   string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
-	key = TeamKey(team)
-	check, err = GetTeam(key)
+	check, err = GetTeam(team.Name)
 	if &check != nil && check.Name == team.Name {
 		err = errors.New("You're trying to create a team that already exists.")
 		return
@@ -218,7 +216,7 @@ func AddTeam(team *Team) (err error) {
 	if err != nil {
 		return
 	}
-	
+	key = TeamKey(team)
 	err = r.Store(key, data)
 	if err != nil {
 		return
@@ -234,7 +232,10 @@ func UpdateTeam(team *Team) (err error) {
 		data []byte
 		key  string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 	data, err = json.Marshal(team)
 	if err != nil {
@@ -242,6 +243,16 @@ func UpdateTeam(team *Team) (err error) {
 	}
 	key = TeamKey(team)
 	err = r.Store(key, data)
+	if err != nil {
+		return
+	}
+	// iterate over all tokens and update the token information
+	//if len(team.Token) > 0 {
+	//	for idx := range team.Token {
+	//		tok := team.Token[idx]
+	//		UpdateToken(&tok)
+	//	}
+	//}
 	return
 }
 
@@ -250,7 +261,10 @@ func DeleteTeam(team *Team) (err error) {
 		r     RedisHelper
 		key string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 	key = TeamKey(team)
 	err = r.RemFromSet("teams", team.Name)
@@ -269,10 +283,16 @@ func GetTeam(name string) (team Team, err error) {
 		data []byte
 		key  string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
-	key = fmt.Sprintf("%s:%s", "team", name)
+	team = Team{}
+	team.Name = name
+	key = TeamKey(&team)
 	data, _ = r.Fetch(key)
+	team = Team{}
 	json.Unmarshal(data, &team)
 	return
 }
@@ -284,7 +304,10 @@ func GetTeamWithTeam(team *Team) (err error) {
 		data []byte
 		key  string
 	)
-	r = NewRedisHelper()
+	r, err = NewRedisHelper()
+	if err != nil {
+		return
+	}
 	defer r.Close()
 	key = fmt.Sprintf("%s:%s", "team", team.Name)
 	data, _ = r.Fetch(key)
