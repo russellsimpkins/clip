@@ -39,7 +39,7 @@ type Feature struct {
 }
 
 type Flag struct {
-	Attribs map[string]int `json:"attributes"`
+	Attribs map[string]string `json:"attributes"`
 	Sandbox     int `json:"sbx"`
 	Development int `json:"dev"`
 	Staging     int `json:"stg"`
