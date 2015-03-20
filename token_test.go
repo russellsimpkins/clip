@@ -1,3 +1,4 @@
+
 package clip
 
 import (
@@ -36,6 +37,14 @@ func setupTeam(team *Team) {
 	return
 }
 
+type IntMap map[string]int
+
+func makeMap(name string, value int) ( v *IntMap ) {
+	m := make(IntMap)
+	v = &m
+	m[name] = value
+	return
+}
 
 func TestTokenCrud(t *testing.T) {
 	
@@ -49,8 +58,9 @@ func TestTokenCrud(t *testing.T) {
 	
 	// Create a team
 	team := Team{}
-	team.Name = "Data Universe"
-	setupTeam(&team)
+	team.Name = "Test"
+	team, _ = GetTeam(team.Name)
+	//setupTeam(&team)
 	t.Log("INFO: team: ", team)
 
 	w := httptest.NewRecorder()
@@ -79,17 +89,29 @@ func TestTokenCrud(t *testing.T) {
 	if err != nil {
 		return
 	}
-	team.Token[0].Applications = make(map[string]Feature, 2)
+	if 1 == 2 {
+		return
+	}
+	team.Token[1].Applications = make(map[string]Feature, 2)
+	
 	f := Feature{}
 	f.Flags = make(map[string]Flag, 2)
-	fl := f.Flags["chocolate"]
+	fl := f.Flags["usePapiForBlogs"]
 	fl.Sandbox = 1
 	fl.Development = 1
-	fl.Attribs = make(map[string]int, 1)
-	fl.Attribs["displayFE"] = 1
-	f.Flags["chocolate"] = fl
-	team.Token[0].Applications["doughnuts"] = f
+	fl.Attribs = make(map[string]string, 2)
+	fl.Attribs["exportToBrowser"] = "false"
+	fl.Attribs["ticket"] = "https://jira.em.nytimes.com/browse/MWR-4129"
 	
+	f.Flags["usePapiForBlogs"] = fl
+
+
+	fl = f.Flags["useAmazonDirectMatch"]
+	fl.Attribs = make(map[string]string, 2)
+	fl.Attribs["exportToBrowser"] = "true"
+	fl.Attribs["ticket"] = "https://jira.em.nytimes.com/browse/MWR-4239"
+	f.Flags["useAmazonDirectMatch"] = fl
+	team.Token[0].Applications["MobileWeb"] = f
 	
 	data, _ = json.Marshal(team)
 	
