@@ -60,7 +60,7 @@ func TestTokenCrud(t *testing.T) {
 	team := Team{}
 	team.Name = "Test"
 	team, _ = GetTeam(team.Name)
-	//setupTeam(&team)
+	setupTeam(&team)
 	t.Log("INFO: team: ", team)
 
 	w := httptest.NewRecorder()
@@ -92,23 +92,36 @@ func TestTokenCrud(t *testing.T) {
 	if 1 == 2 {
 		return
 	}
-	team.Token[1].Applications = make(map[string]Feature, 2)
+	
+	team.Token[0].Applications = make(map[string]Feature, 2)
+	if len(team.Token) > 1 {
+		team.Token[1].Applications = make(map[string]Feature, 2)
+	}
 	
 	f := Feature{}
+	team.Token[0].Applications["MobileWeb"] = f
+	
 	f.Flags = make(map[string]Flag, 2)
 	fl := f.Flags["usePapiForBlogs"]
-	fl.Sandbox = 1
+ 	fl.Sandbox = 1
 	fl.Development = 1
 	fl.Attribs = make(map[string]bool, 2)
 	fl.Attribs["exportToBrowser"] = false
 	f.Flags["usePapiForBlogs"] = fl
-
-
+	
+	
 	fl = f.Flags["useAmazonDirectMatch"]
 	fl.Attribs = make(map[string]bool, 2)
 	fl.Attribs["exportToBrowser"] = true
+	fl.Sandbox = 1
+	fl.Development = 1
 	f.Flags["useAmazonDirectMatch"] = fl
+	fmt.Println("TEAM: ", team.Token)
+
 	team.Token[0].Applications["MobileWeb"] = f
+	if len(team.Token) > 1 {
+	team.Token[1].Applications["MobileWeb"] = f
+	}
 	
 	data, _ = json.Marshal(team)
 	
