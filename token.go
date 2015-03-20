@@ -75,14 +75,23 @@ func GetTokenHandler(writer http.ResponseWriter, req *http.Request) {
 	//t := req.Header.Get("Authorization")
 
 	vars = mux.Vars(req)
+	team  := Team{}
+	
 	token = Token{}
 	token.StringValue = vars["token"]
-	token.Team = vars["team"]
-	err = GetToken(&token)
+	team.Name = vars["team"]
+	team, err = GetTeam(team.Name)
 	if err != nil {
 		str := fmt.Sprintf("Unable to fetch the token: %s", err)
 		SendError(500, str, writer)
 		return
+	}
+	for idx := range team.Token {
+		token = team.Token[idx]
+		if token.StringValue == vars["token"] {
+			break
+		}
+		token = Token{}
 	}
 	body, err = json.Marshal(token)
 	if err != nil {
