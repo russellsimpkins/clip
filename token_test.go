@@ -99,17 +99,14 @@ func TestTokenCrud(t *testing.T) {
 	fl := f.Flags["usePapiForBlogs"]
 	fl.Sandbox = 1
 	fl.Development = 1
-	fl.Attribs = make(map[string]string, 2)
-	fl.Attribs["exportToBrowser"] = "false"
-	fl.Attribs["ticket"] = "https://jira.em.nytimes.com/browse/MWR-4129"
-	
+	fl.Attribs = make(map[string]bool, 2)
+	fl.Attribs["exportToBrowser"] = false
 	f.Flags["usePapiForBlogs"] = fl
 
 
 	fl = f.Flags["useAmazonDirectMatch"]
-	fl.Attribs = make(map[string]string, 2)
-	fl.Attribs["exportToBrowser"] = "true"
-	fl.Attribs["ticket"] = "https://jira.em.nytimes.com/browse/MWR-4239"
+	fl.Attribs = make(map[string]bool, 2)
+	fl.Attribs["exportToBrowser"] = true
 	f.Flags["useAmazonDirectMatch"] = fl
 	team.Token[0].Applications["MobileWeb"] = f
 	
