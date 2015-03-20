@@ -296,6 +296,51 @@ func GetTokenAppFeatureHandler(writer http.ResponseWriter, req *http.Request) {
 	writer.Write(body)
 	return
 }
+
+// handler to take requests from the interweb and return the token by name
+func GetTokenAppFeatureEnvHandler(writer http.ResponseWriter, req *http.Request) {
+	var (
+		body  []byte
+		err   error
+		token  Token
+		vars  map[string]string
+	)
+	//t := req.Header.Get("Authorization")
+
+	vars = mux.Vars(req)
+	token = Token{}
+	token.StringValue = vars["token"]
+	token.Team = vars["team"]
+	err = GetToken(&token)
+	if err != nil {
+		str := fmt.Sprintf("Unable to fetch the token: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	f := token.Applications[vars["app"]].Flags[vars["feature"]]
+	e := vars["env"]
+	m := make(map[string]bool, 1)
+	switch {
+	case e == "sbx":
+        m[vars["feature"]]= f.Sandbox == 1
+    case e == "dev":
+        m[vars["feature"]]= f.Development == 1
+    case e == "stg":
+		m[vars["feature"]]= f.Staging == 1
+	case e == "int":
+        m[vars["feature"]]= f.Integration == 1
+	case e == "prd":
+        m[vars["feature"]]= f.Production == 1
+    }
+	body, err = json.Marshal(m)
+	if err != nil {
+		str := fmt.Sprintf("There was a problem encoding the token. Err: %s", err)
+		SendError(500, str, writer)
+		return
+	}
+	writer.Write(body)
+	return
+}
 //**********************************************************************
 // DAO Methods
 //**********************************************************************
