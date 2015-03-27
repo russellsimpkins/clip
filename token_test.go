@@ -23,7 +23,7 @@ func setupTeam(team *Team) {
 		router *mux.Router
 		request *http.Request
 	)
-	
+
 	router = mux.NewRouter()
 	SetRoutes(router)
 
@@ -47,15 +47,15 @@ func makeMap(name string, value int) ( v *IntMap ) {
 }
 
 func TestTokenCrud(t *testing.T) {
-	
+
 	var (
 		router *mux.Router
 		request *http.Request
 	)
-	
+
 	router = mux.NewRouter()
 	SetRoutes(router)
-	
+
 	// Create a team
 	team := Team{}
 	team.Name = "Test"
@@ -70,15 +70,15 @@ func TestTokenCrud(t *testing.T) {
 	url := fmt.Sprintf("/svc/clip/team/%s/token", team.Name)
 	//t.Log("INFO: url: ", url)
 	request, _ = http.NewRequest("POST", url, strings.NewReader(string(data)))
-	
+
 	router.ServeHTTP(w, request)
 	t.Log(w.Body.String())
-	
+
 	if w.Code != 200 {
 		t.Log("ERROR: ", w.Body.String())
 		t.Fail()
 	}
-	
+
 	url = fmt.Sprintf("/svc/clip/team/%s", team.Name)
 	request, _ = http.NewRequest("GET", url, nil)
 	w = httptest.NewRecorder()
@@ -92,15 +92,15 @@ func TestTokenCrud(t *testing.T) {
 	if 1 == 2 {
 		return
 	}
-	
+
 	team.Token[0].Applications = make(map[string]Feature, 2)
 	if len(team.Token) > 1 {
 		team.Token[1].Applications = make(map[string]Feature, 2)
 	}
-	
+
 	f := Feature{}
 	team.Token[0].Applications["MobileWeb"] = f
-	
+
 	f.Flags = make(map[string]Flag, 2)
 	fl := f.Flags["usePapiForBlogs"]
  	fl.Sandbox = 1
@@ -108,8 +108,8 @@ func TestTokenCrud(t *testing.T) {
 	fl.Attribs = make(map[string]bool, 2)
 	fl.Attribs["exportToBrowser"] = false
 	f.Flags["usePapiForBlogs"] = fl
-	
-	
+
+
 	fl = f.Flags["useAmazonDirectMatch"]
 	fl.Attribs = make(map[string]bool, 2)
 	fl.Attribs["exportToBrowser"] = true
@@ -122,9 +122,9 @@ func TestTokenCrud(t *testing.T) {
 	if len(team.Token) > 1 {
 	team.Token[1].Applications["MobileWeb"] = f
 	}
-	
+
 	data, _ = json.Marshal(team)
-	
+
 	t.Log(string(data))
 
 	url = fmt.Sprintf("/svc/clip/team/%s", team.Name)
@@ -142,5 +142,5 @@ func cleanUp(team *Team) {
 	response := httptest.NewRecorder()
 	request, _ := http.NewRequest("DELETE", fmt.Sprintf("/svc/clip/team/%s", team.Name), nil)
 	router.ServeHTTP(response, request)
-	
+
 }
